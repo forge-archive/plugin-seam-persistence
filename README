@@ -1,0 +1,4 @@
+This plugin makes it easy to add Seam Persistence to your project. It adds the required dependencies, configures the interceptor in beans.xml and generates a Managed Persistenced Context Producer. The plugin requires JPA and CDI to be installed on the project.
+
+forge git-plugin git://github.com/forge/plugin-seam-persistence.git
+seam-persistence setup --enableDeclarativeTX --installManagedPersistenceContext
