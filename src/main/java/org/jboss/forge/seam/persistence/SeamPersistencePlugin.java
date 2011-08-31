@@ -3,6 +3,7 @@ package org.jboss.forge.seam.persistence;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.Field;
 import org.jboss.forge.parser.java.JavaClass;
+import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.dependencies.Dependency;
@@ -17,7 +18,6 @@ import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.*;
 import org.jboss.forge.spec.javaee.CDIFacet;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
-import org.jboss.shrinkwrap.descriptor.spi.Node;
 
 import javax.inject.Inject;
 import java.io.FileNotFoundException;
@@ -109,7 +109,7 @@ public class SeamPersistencePlugin implements Plugin
       boolean interceptorIsInstalled = false;
       for (Node interceptorClass : interceptorClasses)
       {
-         if (interceptorClass.text().equals("org.jboss.seam.transaction.TransactionInterceptor"))
+         if (interceptorClass.getText().equals("org.jboss.seam.transaction.TransactionInterceptor"))
          {
             interceptorIsInstalled = true;
             break;
@@ -118,7 +118,7 @@ public class SeamPersistencePlugin implements Plugin
 
       if (!interceptorIsInstalled)
       {
-         interceptors.create("class").text("org.jboss.seam.transaction.TransactionInterceptor");
+         interceptors.createChild("class").text("org.jboss.seam.transaction.TransactionInterceptor");
       }
 
 
