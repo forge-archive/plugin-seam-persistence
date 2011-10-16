@@ -79,7 +79,7 @@ public class SeamPersistencePlugin implements Plugin
       javaClass.addImport("javax.enterprise.inject.Produces");
       javaClass.addImport("javax.persistence.EntityManagerFactory");
       javaClass.addImport("javax.persistence.PersistenceUnit");
-      javaClass.addImport("org.jboss.seam.solder.core.ExtensionManaged");
+      javaClass.addImport("org.jboss.solder.core.ExtensionManaged");
 
       try
       {
@@ -131,7 +131,7 @@ public class SeamPersistencePlugin implements Plugin
       DependencyBuilder seamPersistenceDependency =
               DependencyBuilder.create()
                       .setGroupId("org.jboss.seam.persistence")
-                      .setArtifactId("seam-persistence-api");
+                      .setArtifactId("seam-persistence");
 
       if (!dependencyFacet.hasDependency(seamPersistenceDependency))
       {
@@ -145,10 +145,6 @@ public class SeamPersistencePlugin implements Plugin
          dependencyFacet.setProperty("seam.persistence.version", choosenVersion.getVersion());
 
          dependencyFacet.addDependency(seamPersistenceDependency.setVersion("${seam.persistence.version}"));
-         dependencyFacet.addDependency(DependencyBuilder.create()
-                 .setGroupId("org.jboss.seam.persistence")
-                 .setArtifactId("seam-persistence-impl")
-                 .setVersion("${seam.persistence.version}"));
       }
    }
 }
