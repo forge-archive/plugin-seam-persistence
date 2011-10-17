@@ -31,7 +31,7 @@ public class SeamPersistencePlugin implements Plugin
    @Inject ShellPrompt prompt;
 
 
-   @Command(value = "setup")
+   @SetupCommand
    public void install(@Option(name = "enableDeclarativeTX", flagOnly = true) boolean enableDeclarativeTX,
                        @Option(name = "installManagedPersistenceContext", flagOnly = true) boolean installManagedPC)
    {
