@@ -19,6 +19,7 @@ import org.jboss.forge.shell.plugins.*;
 import org.jboss.forge.spec.javaee.CDIFacet;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -27,8 +28,11 @@ import java.util.List;
 @RequiresFacet({PersistenceFacet.class, DependencyFacet.class, ResourceFacet.class, CDIFacet.class})
 public class SeamPersistencePlugin implements Plugin
 {
-   @Inject Project project;
-   @Inject ShellPrompt prompt;
+   @Inject
+   private Project project;
+   
+   @Inject
+   private ShellPrompt prompt;
 
 
    @SetupCommand
@@ -74,7 +78,13 @@ public class SeamPersistencePlugin implements Plugin
       producerField.addAnnotation("Produces");
       producerField.addAnnotation("PersistenceUnit");
       producerField.addAnnotation("ConversationScoped");
+      producerField.addAnnotation("Alternative");
+      
+      if(!javaClass.hasAnnotation(Alternative.class)) {
+	  javaClass.addAnnotation(Alternative.class);
+      }
 
+      javaClass.addImport("javax.enterprise.inject.Alternative");
       javaClass.addImport("javax.enterprise.context.ConversationScoped");
       javaClass.addImport("javax.enterprise.inject.Produces");
       javaClass.addImport("javax.persistence.EntityManagerFactory");
@@ -84,6 +94,8 @@ public class SeamPersistencePlugin implements Plugin
       try
       {
          javaSourceFacet.saveJavaSource(javaClass);
+         
+         addClassToBeansXml("alternatives", javaClass.getQualifiedName());
       } catch (FileNotFoundException e)
       {
          throw new RuntimeException(e);
@@ -91,38 +103,45 @@ public class SeamPersistencePlugin implements Plugin
    }
 
    private void setupDeclarativeTx()
-   {
-      FileResource<?> beansXml;
+   {  
+      addClassToBeansXml("interceptors", "org.jboss.seam.transaction.TransactionInterceptor");
+   }
+   
+   private void addClassToBeansXml(String nodeName, String className) {
+       FileResource<?> beansXml;
 
-      if (project.hasFacet(WebResourceFacet.class))
-      {
-         WebResourceFacet webResourceFacet = project.getFacet(WebResourceFacet.class);
-         beansXml = webResourceFacet.getWebResource("WEB-INF/beans.xml");
-      } else {
-         ResourceFacet resourceFacet = project.getFacet(ResourceFacet.class);
-         beansXml = resourceFacet.getResource("META-INF/beans.xml");
-      }
+       if (project.hasFacet(WebResourceFacet.class))
+       {
+          WebResourceFacet webResourceFacet = project.getFacet(WebResourceFacet.class);
+          beansXml = webResourceFacet.getWebResource("WEB-INF/beans.xml");
+       } else {
+          ResourceFacet resourceFacet = project.getFacet(ResourceFacet.class);
+          beansXml = resourceFacet.getResource("META-INF/beans.xml");
+       }
 
-      Node node = XMLParser.parse(beansXml.getResourceInputStream());
-      Node interceptors = node.getOrCreate("interceptors");
-      List<Node> interceptorClasses = interceptors.get("class");
-      boolean interceptorIsInstalled = false;
-      for (Node interceptorClass : interceptorClasses)
-      {
-         if (interceptorClass.getText().equals("org.jboss.seam.transaction.TransactionInterceptor"))
-         {
-            interceptorIsInstalled = true;
-            break;
-         }
-      }
+       Node rootNode = XMLParser.parse(beansXml.getResourceInputStream());
+       Node node = rootNode.getOrCreate(nodeName);
+       
+       List<Node> nodeClasses = node.get("class");
+       
+       boolean classIsInstalled = false;
+       
+       for (Node interceptorClass : nodeClasses)
+       {
+          if (interceptorClass.getText().equals(className))
+          {
+             classIsInstalled = true;
+             break;
+          }
+       }
 
-      if (!interceptorIsInstalled)
-      {
-         interceptors.createChild("class").text("org.jboss.seam.transaction.TransactionInterceptor");
-      }
+       if (!classIsInstalled)
+       {
+          node.createChild("class").text(className);
+       }
 
 
-      beansXml.setContents(XMLParser.toXMLInputStream(node));
+       beansXml.setContents(XMLParser.toXMLInputStream(rootNode));
    }
 
    private void installDependencies()
