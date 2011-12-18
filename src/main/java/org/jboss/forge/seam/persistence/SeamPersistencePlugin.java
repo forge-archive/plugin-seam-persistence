@@ -125,26 +125,26 @@ public class SeamPersistencePlugin implements Plugin
       beansXml.setContents(XMLParser.toXMLInputStream(node));
    }
 
-   private void installDependencies()
-   {
-      DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
-      DependencyBuilder seamPersistenceDependency =
-              DependencyBuilder.create()
-                      .setGroupId("org.jboss.seam.persistence")
-                      .setArtifactId("seam-persistence");
-
-      if (!dependencyFacet.hasDependency(seamPersistenceDependency))
-      {
-         if(!dependencyFacet.hasRepository(DependencyFacet.KnownRepository.JBOSS_NEXUS)) {
-            dependencyFacet.addRepository(DependencyFacet.KnownRepository.JBOSS_NEXUS);
-         }
-
-         List<Dependency> versions = dependencyFacet.resolveAvailableVersions(seamPersistenceDependency);
-
-         Dependency choosenVersion = prompt.promptChoiceTyped("Which version of Seam Persistence do you want to install?", versions, versions.get(versions.size() - 1));
-         dependencyFacet.setProperty("seam.persistence.version", choosenVersion.getVersion());
-
-         dependencyFacet.addDependency(seamPersistenceDependency.setVersion("${seam.persistence.version}"));
-      }
-   }
+    private void installDependencies()
+    {
+        DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
+        DependencyBuilder seamPersistenceDependency =
+        DependencyBuilder.create()
+        .setGroupId("org.jboss.seam.persistence")
+        .setArtifactId("seam-persistence");
+        
+        if (!dependencyFacet.hasDirectDependency(seamPersistenceDependency))
+        {
+            if(!dependencyFacet.hasRepository(DependencyFacet.KnownRepository.JBOSS_NEXUS)) {
+                dependencyFacet.addRepository(DependencyFacet.KnownRepository.JBOSS_NEXUS);
+            }
+            
+            List<Dependency> versions = dependencyFacet.resolveAvailableVersions(seamPersistenceDependency);
+            
+            Dependency choosenVersion = prompt.promptChoiceTyped("Which version of Seam Persistence do you want to install?", versions, versions.get(versions.size() - 1));
+            dependencyFacet.setProperty("seam.persistence.version", choosenVersion.getVersion());
+            
+            dependencyFacet.addDirectDependency(seamPersistenceDependency.setVersion("${seam.persistence.version}"));
+        }
+    }
 }
