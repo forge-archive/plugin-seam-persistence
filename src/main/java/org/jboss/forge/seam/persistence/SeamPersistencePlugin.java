@@ -34,13 +34,9 @@ import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.shell.PromptType;
+import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.ShellPrompt;
-import org.jboss.forge.shell.plugins.Alias;
-import org.jboss.forge.shell.plugins.Command;
-import org.jboss.forge.shell.plugins.Option;
-import org.jboss.forge.shell.plugins.Plugin;
-import org.jboss.forge.shell.plugins.RequiresFacet;
-import org.jboss.forge.shell.plugins.SetupCommand;
+import org.jboss.forge.shell.plugins.*;
 import org.jboss.forge.spec.javaee.CDIFacet;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.solder.core.ExtensionManaged;
@@ -58,9 +54,10 @@ public class SeamPersistencePlugin implements Plugin
 
    @SetupCommand
    public void install(@Option(name = "enableDeclarativeTX", flagOnly = true) boolean enableDeclarativeTX,
-                       @Option(name = "installManagedPersistenceContext", flagOnly = true) boolean installManagedPC)
+                       @Option(name = "installManagedPersistenceContext", flagOnly = true) boolean installManagedPC,
+                       PipeOut out)
    {
-      installDependencies();
+      installDependencies(out);
 
       if (enableDeclarativeTX)
       {
@@ -173,7 +170,7 @@ public class SeamPersistencePlugin implements Plugin
       beansXml.setContents(XMLParser.toXMLInputStream(node));
    }
 
-    private void installDependencies()
+    private void installDependencies(PipeOut out)
     {
         DependencyFacet dependencyFacet = project.getFacet(DependencyFacet.class);
         DependencyBuilder seamPersistenceDependency =
@@ -188,6 +185,11 @@ public class SeamPersistencePlugin implements Plugin
             }
             
             List<Dependency> versions = dependencyFacet.resolveAvailableVersions(seamPersistenceDependency);
+            
+            if (null == versions || versions.size() == 0) {
+                ShellMessages.error(out, "Cannot find any versions for dependency "+seamPersistenceDependency.toString()+", check maven settings.");
+                return;
+            }
             
             Dependency choosenVersion = prompt.promptChoiceTyped("Which version of Seam Persistence do you want to install?", versions, versions.get(versions.size() - 1));
             dependencyFacet.setProperty("seam.persistence.version", choosenVersion.getVersion());
