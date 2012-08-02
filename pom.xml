@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.forge.seam.persistence</groupId>
   <artifactId>plugin-seam-persistence</artifactId>
-  <version>${forge.api.version}</version>
+  <version>1.0.0-SNAPSHOT</version>
   <properties>
     <forge.api.version>1.0.5.Final</forge.api.version>
   </properties>
